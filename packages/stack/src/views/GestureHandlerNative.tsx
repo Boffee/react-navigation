@@ -7,16 +7,41 @@ import GestureHandlerRefContext from '../utils/GestureHandlerRefContext';
 
 export function PanGestureHandler(props: PanGestureHandlerProperties) {
   const gestureRef = React.useRef<PanGestureHandlerNative>(null);
+  const [simultaneousHandlers, setSimultaneousHandlers] = React.useState<
+    React.Ref<any> | React.Ref<any>[]
+  >();
 
-  return (
-    <GestureHandlerRefContext.Provider value={gestureRef}>
-      <PanGestureHandlerNative {...props} ref={gestureRef} />
-    </GestureHandlerRefContext.Provider>
-  );
+  const hitSlop: any = props.hitSlop;
+  const isModal =
+    hitSlop?.top !== undefined ||
+    hitSlop?.bottom !== undefined ||
+    hitSlop?.vertical !== undefined;
+
+  if (isModal) {
+    return (
+      <GestureHandlerRefContext.Provider
+        value={{ handler: gestureRef, setSimultaneousHandlers }}
+      >
+        <PanGestureHandlerNative
+          {...props}
+          ref={gestureRef}
+          simultaneousHandlers={simultaneousHandlers}
+        />
+      </GestureHandlerRefContext.Provider>
+    );
+  } else {
+    return (
+      <PanGestureHandlerNative
+        {...props}
+        ref={gestureRef}
+        simultaneousHandlers={simultaneousHandlers}
+      />
+    );
+  }
 }
 
 export {
   GestureHandlerRootView,
-  State as GestureState,
   PanGestureHandlerGestureEvent,
+  State as GestureState,
 } from 'react-native-gesture-handler';
